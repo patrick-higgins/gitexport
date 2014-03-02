@@ -14,6 +14,7 @@ type Lexer struct {
 	token  Token
 	line   string
 	lineno int
+	fields []string
 	err    error
 }
 
@@ -42,6 +43,14 @@ func (l *Lexer) LineNumber() int {
 	return l.lineno
 }
 
+func (l *Lexer) Field(i int) string {
+	return l.fields[i]
+}
+
+func (l *Lexer) Fields() []string {
+	return l.fields
+}
+
 func (l *Lexer) Error() error {
 	return l.err
 }
@@ -51,6 +60,7 @@ func (l *Lexer) Consume() {
 	l.token = classify(line, err)
 	l.line = line
 	l.lineno++
+	l.fields = strings.Split(line, " ")
 	l.err = err
 }
 
