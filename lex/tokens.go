@@ -38,10 +38,8 @@ const (
 	MTok
 	NTok
 	RTok
-	InlineTok
 	DeleteAllTok
 	TaggerTok
-	DelimTok
 	NTokens
 )
 
@@ -73,10 +71,8 @@ var tokenStrings = []string{
 	MTok:          "M",
 	NTok:          "N",
 	RTok:          "R",
-	InlineTok:     "inline",
 	DeleteAllTok:  "deleteall",
 	TaggerTok:     "tagger",
-	DelimTok:      "<<",
 }
 
 var tokenMap map[string]Token
