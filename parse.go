@@ -139,20 +139,19 @@ func (p *Parser) person() *Person {
 }
 
 func (p *Parser) when(val []string) time.Time {
+	// now format
 	if val[0] == "now" {
 		return time.Now()
 	}
 
 	// raw format
 	var sec int64
-	n, err := fmt.Sscanf(val[0], "%d", &sec)
-	if err != nil {
-		panic(err)
-	}
-	if n == 1 {
+	_, err := fmt.Sscanf(val[0], "%d", &sec)
+	if err == nil {
 		return time.Unix(sec, 0)
 	}
 
+	// rfc2822 format
 	const rfc2822 = "Mon Jan 2 15:04:05 2006 -0700"
 	t, err := time.Parse(rfc2822, strings.Join(val, " "))
 	if err != nil {
