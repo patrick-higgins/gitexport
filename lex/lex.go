@@ -18,6 +18,16 @@ type Lexer struct {
 	err    error
 }
 
+func splitFields(line string) []string {
+	if len(line) == 0 {
+		return nil
+	}
+	if len(line) > 0 && line[len(line)-1] == '\n' {
+		line = line[:len(line)-1]
+	}
+	return strings.Split(line, " ")
+}
+
 func New(r io.Reader) *Lexer {
 	bufr := bufio.NewReader(r)
 	line, err := bufr.ReadString('\n')
@@ -27,6 +37,7 @@ func New(r io.Reader) *Lexer {
 		token:  classify(line, err),
 		lineno: 1,
 		line:   line,
+		fields: splitFields(line),
 		err:    err,
 	}
 }
@@ -60,7 +71,7 @@ func (l *Lexer) Consume() {
 	l.token = classify(line, err)
 	l.line = line
 	l.lineno++
-	l.fields = strings.Split(line, " ")
+	l.fields = splitFields(line)
 	l.err = err
 }
 

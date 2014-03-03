@@ -3,6 +3,7 @@ package lex
 import (
 	"bytes"
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -71,28 +72,35 @@ tagger Some Guy <someguy@gmail.com.uk> 1393367459 -0700
 
 	l := New(r)
 
-	for i, want := range []Token{
-		ResetTok,
-		CommitTok,
-		MarkTok,
-		AuthorTok,
-		CommitterTok,
-		MTok,
-		EmptyTok,
-		ResetTok,
-		FromTok,
-		EmptyTok,
-		CommentTok,
-		TagTok,
-		CommentTok,
-		FromTok,
-		TaggerTok,
-		EmptyTok,
-		EOFTok,
+	for i, tt := range []struct {
+		tok    Token
+		fields []string
+	}{
+		{ResetTok, []string{"reset", "refs/heads/a"}},
+		{CommitTok, []string{"commit", "refs/heads/a"}},
+		{MarkTok, []string{"mark", ":1"}},
+		{AuthorTok, []string{"author", "Some", "Guy", "<someguy@gmail.com.uk>", "1393367434", "-0700"}},
+		{CommitterTok, []string{"committer", "Some", "Guy", "<someguy@gmail.com.uk>", "1393367434", "-0700"}},
+		{MTok, []string{"M", "100644", "e79c5e8f964493290a409888d5413a737e8e5dd5", "test.txt"}},
+		{EmptyTok, []string{""}},
+		{ResetTok, []string{"reset", "refs/heads/master"}},
+		{FromTok, []string{"from", ":2"}},
+		{EmptyTok, []string{""}},
+		{CommentTok, []string{"#", "a", "comment"}},
+		{TagTok, []string{"tag", "c.Merge-to-a-1"}},
+		{CommentTok, []string{"#another", "comment"}},
+		{FromTok, []string{"from", ":2"}},
+		{TaggerTok, []string{"tagger", "Some", "Guy", "<someguy@gmail.com.uk>", "1393367459", "-0700"}},
+		{EmptyTok, []string{""}},
+		{EOFTok, nil},
 	} {
-		got := l.Token()
-		if got != want {
-			t.Errorf("[%d]: nextLine: got=%v, want=%v", i, got, want)
+		tok := l.Token()
+		fields := l.Fields()
+		if tok != tt.tok {
+			t.Errorf("[%d]: token got=%v, want=%v", i, tok, tt.tok)
+		}
+		if !reflect.DeepEqual(fields, tt.fields) {
+			t.Errorf("[%d]: fields got=%#v, want=%#v", i, fields, tt.fields)
 		}
 		l.Consume()
 	}
