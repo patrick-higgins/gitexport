@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/patrick-higgins/gitexport/lex"
 	"io"
+	"log"
+	"runtime/debug"
 	"strings"
 	"time"
 )
@@ -15,6 +17,10 @@ type Parser struct {
 
 func NewParser(r io.Reader) *Parser {
 	return &Parser{l: lex.New(r)}
+}
+
+func NewLexerParser(l *lex.Lexer) *Parser {
+	return &Parser{l: l}
 }
 
 func (p *Parser) error(msg interface{}) error {
@@ -51,6 +57,31 @@ func (p *Parser) parseCommand() interface{} {
 }
 
 var errUnsupported = errors.New("Unsupported operation")
+var errWrongType = errors.New("Internal error: unexpected type")
+var errWrongTok = errors.New("Not looking at requested token type")
+
+func (p *Parser) Commit() (c *Commit, err error) {
+	var ok bool
+	defer func() {
+		if e := recover(); e != nil {
+			log.Printf("%s: %s", e, debug.Stack())
+			err, ok = e.(error)
+			if !ok {
+				err = fmt.Errorf("%v", e)
+			}
+		}
+	}()
+
+	if p.l.Token() != lex.CommitTok {
+		return nil, errWrongTok
+	}
+
+	c, ok = p.commit().(*Commit)
+	if !ok {
+		return nil, errWrongType
+	}
+	return
+}
 
 func (p *Parser) commit() interface{} {
 	var c Commit
@@ -92,22 +123,31 @@ func (p *Parser) commit() interface{} {
 	tok = p.l.Token()
 
 	if tok == lex.FromTok {
-		c.From = p.commitish()
+		from := p.l.Field(1)
+		c.From = &from
 		p.l.Consume()
 		tok = p.l.Token()
 	}
 
-	if tok == lex.MergeTok {
-		c.Merge = p.commitish()
+	for tok == lex.MergeTok {
+		merge := p.l.Field(1)
+		c.Merge = append(c.Merge, merge)
 		p.l.Consume()
 		tok = p.l.Token()
+	}
+
+FileCommands:
+	for {
+		switch p.l.Token() {
+		case lex.MTok, lex.DTok, lex.CTok, lex.RTok, lex.DeleteAllTok, lex.NTok:
+			c.Commands = append(c.Commands, FileCommand(p.l.Line()))
+			p.l.Consume()
+		default:
+			break FileCommands
+		}
 	}
 
 	return &c
-}
-
-func (p *Parser) commitish() *Commitish {
-	return nil
 }
 
 func (p *Parser) mark() int64 {
