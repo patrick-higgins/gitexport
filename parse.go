@@ -90,8 +90,7 @@ func (p *Parser) commit() interface{} {
 	p.l.Consume()
 	tok := p.l.Token()
 	if tok == lex.MarkTok {
-		c.Mark = new(int64)
-		*c.Mark = p.mark()
+		c.Mark = p.mark()
 		p.l.Consume()
 		tok = p.l.Token()
 	}
@@ -123,8 +122,7 @@ func (p *Parser) commit() interface{} {
 	tok = p.l.Token()
 
 	if tok == lex.FromTok {
-		from := p.l.Field(1)
-		c.From = &from
+		c.From = p.l.Field(1)
 		p.l.Consume()
 		tok = p.l.Token()
 	}
@@ -170,8 +168,7 @@ func (p *Parser) person() *Person {
 		emailIdx++
 	}
 	if emailIdx > 1 {
-		s := strings.Join(fields[1:emailIdx], " ")
-		person.Name = &s
+		person.Name = strings.Join(fields[1:emailIdx], " ")
 	}
 	person.Email = fields[emailIdx]
 	person.When = p.when(fields[emailIdx+1:])

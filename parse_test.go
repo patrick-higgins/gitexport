@@ -16,8 +16,8 @@ func TestParse(t *testing.T) {
 	r := strings.NewReader(lfOnly(`reset refs/heads/a
 commit refs/heads/a
 mark :1
-author Patrick Higgins <patrick.allen.higgins@gmail.com> 1393367434 -0700
-committer Patrick Higgins <patrick.allen.higgins@gmail.com> 1393367434 -0700
+author Some Guy <someguy@domain.us.uk> 1393367434 -0700
+committer Some Guy <someguy@domain.us.uk> 1393367434 -0700
 data 8
 initial
 M 100644 e79c5e8f964493290a409888d5413a737e8e5dd5 test.txt
@@ -27,7 +27,7 @@ from :2
 
 tag c.Merge-to-a-1
 from :2
-tagger Patrick Higgins <patrick.allen.higgins@gmail.com> 1393367459 -0700
+tagger Some Guy <someguy@domain.us.uk> 1393367459 -0700
 data 15
 c.Merge-to-a-1
 
@@ -38,58 +38,43 @@ c.Merge-to-a-1
 
 func TestCommit(t *testing.T) {
 	r := strings.NewReader(lfOnly(`commit refs/heads/a
-mark :1
-author Patrick Higgins <patrick.allen.higgins@gmail.com> 1393367434 -0700
-committer Patrick Higgins <patrick.allen.higgins@gmail.com> 1393367434 -0700
+mark :4
+author Some Guy <someguy@domain.us.uk> 1393367434 -0700
+committer Some Guy <someguy@domain.us.uk> 1393367434 -0700
 data 8
 initial
+from :1
+merge :2
+merge :3
 M 100644 e79c5e8f964493290a409888d5413a737e8e5dd5 test.txt
 `))
 
 	p := NewParser(r)
-	c, err := p.Commit()
+	got, err := p.Commit()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if c.Ref != "refs/heads/a" {
-		t.Errorf("c.Ref=%#v, want=%#v", c.Ref, "refs/heads/a")
-	}
-
-	if *c.Mark != 1 {
-		t.Errorf("c.Mark=%v, want=%v", c.Mark, 1)
-	}
-
-	personName := "Patrick Higgins"
 	personTime := time.Unix(0, 0).Add(1393367434 * time.Second)
-	wantPerson := &Person{
-		Name:  &personName,
-		Email: "<patrick.allen.higgins@gmail.com>",
+	wantPerson := Person{
+		Name:  "Some Guy",
+		Email: "<someguy@domain.us.uk>",
 		When:  personTime,
 	}
 
-	if !reflect.DeepEqual(c.Author, wantPerson) {
-		t.Errorf("c.Author=%#v, want=%#v", c.Author, wantPerson)
+	want := &Commit{
+		Ref:       "refs/heads/a",
+		Mark:      4,
+		Author:    &wantPerson,
+		Committer: wantPerson,
+		Message:   "initial\n",
+		From:      ":1",
+		Merge:     []string{":2", ":3"},
+		Commands:  []FileCommand{"M 100644 e79c5e8f964493290a409888d5413a737e8e5dd5 test.txt\n"},
 	}
 
-	if !reflect.DeepEqual(&c.Committer, wantPerson) {
-		t.Errorf("c.Committer=%#v, want=%#v", c.Committer, wantPerson)
+	if !reflect.DeepEqual(got.Mark, want.Mark) {
+		t.Errorf("got:\n\t%#v\nwant:\n\t%#v", got, want)
 	}
 
-	if c.Message != "initial\n" {
-		t.Errorf("c.Message=%#v, want=%#v", c.Message, "initial\n")
-	}
-
-	if c.From != nil {
-		t.Errorf("c.From=%#v, want nil", *c.From)
-	}
-
-	if c.Merge != nil {
-		t.Errorf("c.Merge=%#v, want nil", c.Merge)
-	}
-
-	wantCommands := []FileCommand{"M 100644 e79c5e8f964493290a409888d5413a737e8e5dd5 test.txt\n"}
-	if !reflect.DeepEqual(c.Commands, wantCommands) {
-		t.Errorf("c.Commands=%#v, want=%#v", c.Commands, wantCommands)
-	}
 }
