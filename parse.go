@@ -145,6 +145,10 @@ FileCommands:
 		}
 	}
 
+	if p.l.Line() == "\n" {
+		p.l.Consume()
+	}
+
 	return &c
 }
 

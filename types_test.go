@@ -29,6 +29,7 @@ func TestCommitWrite(t *testing.T) {
 committer <some.guy@domain.us.uk> 1136239445 -0700
 data 8
 message
+
 `,
 		},
 		{
@@ -61,6 +62,7 @@ merge :44
 merge :45
 D foo/bar
 M 100755 :46 foo/bar
+
 `,
 		},
 	} {

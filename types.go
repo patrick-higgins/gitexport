@@ -94,6 +94,8 @@ func (c *Commit) Write(w io.Writer) (n int, err error) {
 		write(string(cmd))
 	}
 
+	write("\n")
+
 	return
 }
 
