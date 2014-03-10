@@ -48,7 +48,7 @@ message
 				Message:  "message\n",
 				From:     ":43",
 				Merge:    []string{":44", ":45"},
-				Commands: []FileCommand{"D foo/bar", "M 100755 :46 foo/bar"},
+				Commands: []FileCommand{"D foo/bar\n", "M 100755 :46 foo/bar\n"},
 			},
 			`commit ref
 mark :42

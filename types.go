@@ -91,7 +91,7 @@ func (c *Commit) Write(w io.Writer) (n int, err error) {
 	}
 
 	for _, cmd := range c.Commands {
-		write(string(cmd) + "\n")
+		write(string(cmd))
 	}
 
 	return
