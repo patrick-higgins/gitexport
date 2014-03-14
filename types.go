@@ -35,7 +35,7 @@ func (f FileCommand) String() string {
 
 type Commit struct {
 	Ref       string        // non-empty
-	Mark      int64         // zero if mark is not present
+	Mark      int           // zero if mark is not present
 	Author    *Person       // nil if author not present
 	Committer Person        // non-empty
 	Message   string        // non-empty

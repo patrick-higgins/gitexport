@@ -152,8 +152,8 @@ FileCommands:
 	return &c
 }
 
-func (p *Parser) mark() int64 {
-	var m int64
+func (p *Parser) mark() int {
+	var m int
 	n, err := fmt.Sscanf(p.l.Field(1), ":%d", &m)
 	if err != nil {
 		panic(err)
@@ -186,10 +186,10 @@ func (p *Parser) when(val []string) time.Time {
 	}
 
 	// raw format
-	var sec int64
+	var sec int
 	_, err := fmt.Sscanf(val[0], "%d", &sec)
 	if err == nil {
-		return time.Unix(sec, 0)
+		return time.Unix(int64(sec), 0)
 	}
 
 	// rfc2822 format
